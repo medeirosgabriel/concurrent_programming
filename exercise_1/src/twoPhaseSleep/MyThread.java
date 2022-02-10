@@ -6,21 +6,19 @@ import java.util.concurrent.Semaphore;
 public class MyThread extends Thread {
 	
 	private int serviceTime;
+	private int newServiceTime;
 	private int id;
 	private List<MyThread> threads;
-	private int leftLimit;
-	private int rightLimit;
-	private Semaphore mutex;
-	private Counter counter;
+	private Semaphore mutex1;
+	private Semaphore mutex2;
 	
-	public MyThread(int id, int serviceTime, List<MyThread> threads, Counter counter, int leftLimit, int rightLimit) {
+	public MyThread(int id, int serviceTime, List<MyThread> threads, Semaphore mutex1, Semaphore mutex2) {
 		this.id = id;
 		this.serviceTime = serviceTime;
+		this.newServiceTime = -1;
 		this.threads = threads;
-		this.leftLimit = leftLimit;
-		this.rightLimit = rightLimit;
-		this.mutex = new Semaphore(0);
-		this.counter = counter;
+		this.mutex1 = mutex1;
+		this.mutex2 = mutex2;
 	}
 	
 	@Override
@@ -31,24 +29,26 @@ public class MyThread extends Thread {
             Thread.sleep(this.serviceTime);
             System.out.println(String.format("Finished Thread %d", 
             		this.id));
-            
             int neightboor = (this.id + 1) % this.threads.size();
-            int newServiceTime = this.leftLimit + (int) (Math.random() * (this.rightLimit - this.leftLimit));
+            int newServiceTime = (int) (Math.random() * 5000);
+            this.mutex1.release();
             threads.get(neightboor).release(newServiceTime);
-            this.mutex.acquire();
-            System.out.println(String.format("Running Thread %d - Second Time - %d miliseconds - %d miliseconds", 
-            		this.id, this.serviceTime, newServiceTime));
-            Thread.sleep(this.serviceTime);
-            this.mutex.release();
+            this.mutex2.acquire();
+            System.out.println(String.format("Running Thread %d - Second Time: %d miliseconds - Choose: %d miliseconds", 
+            		this.id, this.newServiceTime, newServiceTime));
+            Thread.sleep(this.newServiceTime);
             System.out.println(String.format("Finished Thread %d", this.id));
-            this.counter.decrement();
+            this.mutex1.release();
         } catch (InterruptedException e) {
             System.out.println(e.getMessage());
         }
 	}
 	
 	public void release(int serviceTime) {
-		this.serviceTime = serviceTime;
-		this.mutex.release();
+		this.newServiceTime = serviceTime;
+	}
+	
+	public void setMutex1(Semaphore mutex1) {
+		this.mutex1 = mutex1;
 	}
 }
