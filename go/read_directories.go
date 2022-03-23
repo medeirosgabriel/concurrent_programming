@@ -19,17 +19,19 @@ func walk(path string, ch chan string) {
 	if err != nil {
         log.Fatal(err)
     }
-	var directorys []string
+	
+	var directories []string
+
     for _, f := range files {
 		if (!f.IsDir()) {
 			file_path := path + f.Name()
 			ch <- file_path
 		} else {
-			directorys = append(directorys, f.Name())	
+			directories = append(directories, f.Name())	
 		}
     }
-	if (len(directorys) > 0) {
-		for _, element := range directorys {
+	if (len(directories) > 0) {
+		for _, element := range directories {
 			walk(path + element + "/", ch)
 		}
 	} else{
