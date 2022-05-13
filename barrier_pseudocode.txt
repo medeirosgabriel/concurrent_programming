@@ -1,0 +1,30 @@
+mutex = Semaphore(0)
+catr_1 = Semaphore(0)
+catr_2 = Semaphore(1)
+count = 0
+n_threads = ?
+
+wait_other_threads(){
+
+	# First Time
+	mutex.wait()
+	count ++
+	if (count == n_threads) {
+		catr_2.wait()
+		catr_1.sign()
+	}
+	mutex.sign()
+	catr_1.wait()
+	catr_1.sign()
+	
+	# Second Time
+	mutex.wait()
+	count --
+	if (count == 0) {
+		catr_1.wait()
+		catr_2.sign()
+	}
+	mutex.sign()
+	catr_2.wait()
+	catr_2.sign()
+}
